@@ -45,7 +45,12 @@ async def cmd_start(message: types.Message):
         "Меня зовут Любовь. Я начинающий специалист по тестированию.\n"
         "Добро пожаловать в мой бот-визитку!"
     )
-    await message.answer(welcome_text, reply_markup=create_main_keyboard())
+    
+    await message.answer_photo(
+        photo="https://i.ibb.co/DfTpmMgG/avatar.jpg",
+        caption=welcome_text,
+        reply_markup=create_main_keyboard()
+    )
 
 # ---------- КОМАНДА /about ----------
 @dp.message(Command("about"))
