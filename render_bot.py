@@ -57,7 +57,10 @@ async def cmd_start(message: types.Message):
 async def cmd_about(message: types.Message):
     about_text = (
         "ℹ️ **О себе:**\n\n"
-        "Я активно учусь и использую современные инструменты, включая искусственный интеллект, чтобы быстрее осваивать новые технологии. Каждый проект я разбираю до деталей — так я расту как специалист."
+        "Я начинающий специалист по тестированию, живу и работаю в Саратове. Мой путь в IT начался с изучения Python и желания понять, как создаются и совершенствуются цифровые продукты.\n\n"
+        "Для меня тестирование — это не просто рутинная проверка, а увлекательный процесс исследования продукта. Я использую современные инструменты, такие как MySQL для работы с базами данных, Flask для понимания backend-логики и Telegram API для создания pet-проектов. Эти проекты помогают мне не только прокачивать технические навыки, но и видеть полную картину создания продукта — от идеи до реализации.\n\n"
+        "Мой подход к работе строится на трёх китах: внимательность к деталям, ответственность за результат и постоянное стремление к развитию. Я убеждена, что хороший тестировщик — это не просто тот, кто находит баги, а тот, кто помогает команде сделать продукт лучше и удобнее для пользователя.\n\n"
+        "**О моём обучении:** Я активно учусь и использую современные инструменты, включая искусственный интеллект, чтобы быстрее осваивать новые технологии. Каждый проект я разбираю до деталей — так я расту как специалист."
     )
     await message.answer(about_text, parse_mode=ParseMode.MARKDOWN, reply_markup=create_main_keyboard())
 
@@ -78,7 +81,10 @@ async def process_callback_about(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     about_text = (
         "ℹ️ **О себе:**\n\n"
-        "Я активно учусь и использую современные инструменты, включая искусственный интеллект, чтобы быстрее осваивать новые технологии. Каждый проект я разбираю до деталей — так я расту как специалист."
+        "Я начинающий специалист по тестированию, живу и работаю в Саратове. Мой путь в IT начался с изучения Python и желания понять, как создаются и совершенствуются цифровые продукты.\n\n"
+        "Для меня тестирование — это не просто рутинная проверка, а увлекательный процесс исследования продукта. Я использую современные инструменты, такие как MySQL для работы с базами данных, Flask для понимания backend-логики и Telegram API для создания pet-проектов. Эти проекты помогают мне не только прокачивать технические навыки, но и видеть полную картину создания продукта — от идеи до реализации.\n\n"
+        "Мой подход к работе строится на трёх китах: внимательность к деталям, ответственность за результат и постоянное стремление к развитию. Я убеждена, что хороший тестировщик — это не просто тот, кто находит баги, а тот, кто помогает команде сделать продукт лучше и удобнее для пользователя.\n\n"
+        "**О моём обучении:** Я активно учусь и использую современные инструменты, включая искусственный интеллект, чтобы быстрее осваивать новые технологии. Каждый проект я разбираю до деталей — так я расту как специалист."
     )
     await bot.send_message(
         callback_query.from_user.id,
@@ -112,54 +118,39 @@ async def handle_unknown(message: types.Message):
         reply_markup=create_main_keyboard()
     )
 
-# ---------- WEBHOOK + HEALTH CHECK (для Render) ----------
+# ---------- WEBHOOK + HEALTH CHECK ----------
 async def webhook_handler(request):
-    """Получает обновления от Telegram"""
     update = await request.json()
     logger.info(f"Получен webhook: {update.get('update_id')}")
-    
     telegram_update = types.Update(**update)
     await dp.feed_update(bot, telegram_update)
     return web.Response(text="OK")
 
 async def health_check(request):
-    """Для проверки здоровья Render (обязательно!)"""
     return web.Response(text="OK")
 
 async def set_webhook():
-    """Устанавливает webhook на Render URL"""
     webhook_url = os.environ.get("RENDER_EXTERNAL_URL")
-    
     if not webhook_url:
         logger.error("RENDER_EXTERNAL_URL не задан")
         return
-    
     full_url = f"{webhook_url}/webhook"
     await bot.set_webhook(full_url)
     logger.info(f"Webhook установлен на {full_url}")
 
 async def main():
-    """Главная функция запуска"""
-    # Устанавливаем webhook
     await set_webhook()
-    
-    # Создаем aiohttp приложение
     app = web.Application()
     app.router.add_post("/webhook", webhook_handler)
     app.router.add_get("/health", health_check)
-    
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 10000))
     logger.info(f"Запуск сервера на порту {port}")
-    
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", port)
-    
     await site.start()
     logger.info(f"Сервер запущен на порту {port}")
     logger.info("Бот готов к работе через webhook")
-    
-    # Держим приложение запущенным
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
